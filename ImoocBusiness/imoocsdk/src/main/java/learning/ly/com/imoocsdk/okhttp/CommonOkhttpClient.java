@@ -1,64 +1,99 @@
 package learning.ly.com.imoocsdk.okhttp;
 
+
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
+import learning.ly.com.imoocsdk.okhttp.cookie.SimpleCookieJar;
+import learning.ly.com.imoocsdk.okhttp.https.HttpsUtils;
+import learning.ly.com.imoocsdk.okhttp.listener.DisposeDataHandle;
+import learning.ly.com.imoocsdk.okhttp.response.CommonFileCallback;
 import learning.ly.com.imoocsdk.okhttp.response.CommonJsonCallback;
 import okhttp3.Call;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 
 /**
- * Created by ly on 2018/12/20.
- * @function 请求的发送，请求参数的配置，HTTPS支持。
- * 基本使用方法CommonOkHttpClient.sendRequest(CommonRequest.createGetRequest(url,params),new CommonJsonCallback(){...});
+ * @author qndroid
+ * @function 用来发送get, post请求的工具类，包括设置一些请求的共用参数
  */
-public class CommonOkhttpClient {
+public class CommonOkHttpClient {
+    private static final int TIME_OUT = 30;
+    private static OkHttpClient mOkHttpClient;
 
-    private static final int TIME_OUT=30;//超时参数
-    private static OkHttpClient client;
-    /*
-    一般情况下，如果有些代码必须在项目启动的时候执行，就需要使用静态代码块，这种代码是主动执行的；
-    需要在项目启动的时候初始化，又不在创建对象的情况下，其他程序来调用的时候，需要使用静态方法，这种代码是被动执行的。
-    静态方法在类加载的时候就已经加载可以用类名直接调用。
-
-    一个类可以使用不包含在任何方法体中的静态代码块，当类被载入时，静态代码块被执行，且只被执行一次，静态代码块通常执行类属性的初始化，
-    例如这里client。
-     */
-    //为client配置参数
     static {
-        OkHttpClient.Builder okHttpBuilder=new OkHttpClient.Builder();
-        okHttpBuilder.connectTimeout(TIME_OUT,TimeUnit.SECONDS);
-        okHttpBuilder.readTimeout(TIME_OUT,TimeUnit.SECONDS);
-        okHttpBuilder.writeTimeout(TIME_OUT,TimeUnit.SECONDS);
-        okHttpBuilder.followRedirects(true);//允许重定向
-        //添加HTTPS支持
-        okHttpBuilder.hostnameVerifier(new HostnameVerifier() {
+        OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
+        okHttpClientBuilder.hostnameVerifier(new HostnameVerifier() {
             @Override
-            public boolean verify(String s, SSLSession sslSession) {
+            public boolean verify(String hostname, SSLSession session) {
                 return true;
             }
         });
 
-        //okHttpBuilder.sslSocketFactory(HttpsUtils.getSslSocketFactory());
-        //生成client对象
-        client=okHttpBuilder.build();
+        /**
+         *  为所有请求添加请求头，看个人需求
+         */
+        okHttpClientBuilder.addInterceptor(new Interceptor() {
+            @Override
+            public Response intercept(Chain chain) throws IOException {
+                Request request = chain.request()
+                        .newBuilder()
+                        .addHeader("User-Agent", "Imooc-Mobile") // 标明发送本次请求的客户端
+                        .build();
+                return chain.proceed(request);
+            }
+        });
+        okHttpClientBuilder.cookieJar(new SimpleCookieJar());
+        okHttpClientBuilder.connectTimeout(TIME_OUT, TimeUnit.SECONDS);
+        okHttpClientBuilder.readTimeout(TIME_OUT, TimeUnit.SECONDS);
+        okHttpClientBuilder.writeTimeout(TIME_OUT, TimeUnit.SECONDS);
+        okHttpClientBuilder.followRedirects(true);
+        /**
+         * trust all the https point
+         */
+        okHttpClientBuilder.sslSocketFactory(HttpsUtils.initSSLSocketFactory(), HttpsUtils.initTrustManager());
+        mOkHttpClient = okHttpClientBuilder.build();
     }
 
+    public static OkHttpClient getOkHttpClient() {
+        return mOkHttpClient;
+    }
+
+//    /**
+//     * 指定cilent信任指定证书
+//     *
+//     * @param certificates
+//     */
+//    public static void setCertificates(InputStream... certificates) {
+//        mOkHttpClient.newBuilder().sslSocketFactory(HttpsUtils.getSslSocketFactory(certificates, null, null)).build();
+//    }
+
     /**
-     *发送具体的http或者HTTPS请求
+     * 通过构造好的Request,Callback去发送请求
+     *
      * @param request
-     * @param commCallBack
-     * @return
+     * @param
      */
-    public static Call sendRequest(Request request, CommonJsonCallback commCallBack){
-
-        Call call=client.newCall(request);
-        call.enqueue(commCallBack);
-
+    public static Call get(Request request, DisposeDataHandle handle) {
+        Call call = mOkHttpClient.newCall(request);
+        call.enqueue(new CommonJsonCallback(handle));
         return call;
+    }
 
+    public static Call post(Request request, DisposeDataHandle handle) {
+        Call call = mOkHttpClient.newCall(request);
+        call.enqueue(new CommonJsonCallback(handle));
+        return call;
+    }
+
+    public static Call downloadFile(Request request, DisposeDataHandle handle) {
+        Call call = mOkHttpClient.newCall(request);
+        call.enqueue(new CommonFileCallback(handle));
+        return call;
     }
 }

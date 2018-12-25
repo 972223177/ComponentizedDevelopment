@@ -1,12 +1,13 @@
 apply plugin: 'com.android.library'
-
+//apply plugin: 'realm-android'
+apply plugin: 'realm-android'
 android {
     compileSdkVersion 28
 
 
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 15
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -33,4 +34,5 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    compileOnly 'com.squareup.picasso:picasso:[2.4.0, 2.5.2)'
 }

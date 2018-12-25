@@ -1,6 +1,5 @@
 package com.example.administrator.imoocbusiness.activity;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -20,9 +19,7 @@ import com.example.administrator.imoocbusiness.view.fragment.home.MineFragment;
  * 首页及所有的fragment
  */
 public class HomeActivity extends BaseActivity implements View.OnClickListener
-    ,HomeFragment.OnFragmentInteractionListener
-    ,MessageFragment.OnFragmentInteractionListener
-    ,MineFragment.OnFragmentInteractionListener {
+   {
     /**
      * fragment相关
      */
@@ -149,8 +146,5 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener
         fragmentTransaction.commit();
     }
 
-    @Override
-    public void onFragmentInteraction(Uri uri) {
 
-    }
 }

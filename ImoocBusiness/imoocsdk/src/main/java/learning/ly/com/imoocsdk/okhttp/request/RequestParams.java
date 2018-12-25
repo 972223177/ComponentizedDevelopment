@@ -6,8 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by ly on 2018/12/20.
- * @funtion 封装所有的请求参数到hashmap中
+ * @author vision
  */
 public class RequestParams {
 
