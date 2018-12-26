@@ -12,6 +12,7 @@ import static learning.ly.com.imoocsdk.okhttp.request.CommonRequest.createGetReq
 
 /**
  * Created by ly on 2018/12/25.
+ * @function 存放应用中所有的请求
  */
 public class RequestCenter {
     private static void postRequest(String url, RequestParams params,

@@ -14,6 +14,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.administrator.imoocbusiness.R;
+import com.example.administrator.imoocbusiness.adapter.CourseAdapter;
+import com.example.administrator.imoocbusiness.module.recommand.BaseRecommandModel;
 import com.example.administrator.imoocbusiness.network.RequestCenter;
 
 import learning.ly.com.imoocsdk.okhttp.listener.DisposeDataListener;
@@ -35,6 +37,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener
     /**
      * data
      */
+    private CourseAdapter mAdapter;
+    private BaseRecommandModel mRecommandModel;
 
 
     private Context mContext;
@@ -60,6 +64,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener
             @Override
             public void onSuccess(Object responseObj) {
                 Log.e(TAG, "onSuccess: "+responseObj.toString() );
+                //获取到数据更新UI
+                mRecommandModel = (BaseRecommandModel) responseObj;
+                showSuccessView();
             }
 
             @Override
@@ -67,6 +74,25 @@ public class HomeFragment extends Fragment implements View.OnClickListener
                 Log.e(TAG, "onFailure: "+reasonObj.toString() );
             }
         });
+
+    }
+
+    /**
+     *
+     */
+    private void showSuccessView() {
+
+        if (mRecommandModel.data.list != null && mRecommandModel.data.list.size() > 0) {
+            mLoadingView.setVisibility(View.GONE);
+            mListView.setVisibility(View.VISIBLE);
+            mAdapter=new CourseAdapter(mContext,mRecommandModel.data.list);
+            mListView.setAdapter(mAdapter);
+        }else {
+            showErrorView();
+        }
+    }
+
+    private void showErrorView() {
 
     }
 
